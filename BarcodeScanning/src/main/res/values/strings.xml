@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">CameraXBarcodeScanning</string>
+    <string name="low_light_tip">Low light environment, please turn on lighting</string>
+    <string name="qr_bar_code">QR code / Bar code</string>
+    <string name="file_scan_code_nofile">No pictures to recognize were detected \n Tap the screen to continue scanning</string>
+    <string name="file_scan_code_nodata">QR code/barcode not recognized \n Tap the screen to continue scanning</string>
+
+    <string-array name="scan_type">
+        <item>QR code</item>
+        <item>Bar code</item>
+    </string-array>
+</resources>
