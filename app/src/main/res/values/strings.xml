@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">SmartQR</string>
+    <string name="facebook_app_id" translatable="false">600817298116488</string>
 </resources>
