@@ -18,6 +18,7 @@ import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.LinearLayoutCompat
 import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
@@ -27,7 +28,6 @@ import cn.mtjsoft.barcodescanning.adapter.ScanTypeAdapter
 import cn.mtjsoft.barcodescanning.config.Config
 import cn.mtjsoft.barcodescanning.extentions.screenHeight
 import cn.mtjsoft.barcodescanning.extentions.screenWidth
-import cn.mtjsoft.barcodescanning.interfaces.CallBackFileUri
 import cn.mtjsoft.barcodescanning.interfaces.CustomTouchListener
 import cn.mtjsoft.barcodescanning.transformer.ScanTypePageTransformer
 import cn.mtjsoft.barcodescanning.utils.ScanUtil
@@ -81,13 +81,15 @@ class ScanningActivity : AppCompatActivity() {
     private var config: Config = Config()
 
     private lateinit var closeImageView: ImageView
-    private lateinit var tipView: TextView
     private lateinit var fileScanTipView: TextView
     private lateinit var lineImageView: ImageView
     private lateinit var ivFlashImageView: ImageView
     private lateinit var ivAlbumImageView: ImageView
     private lateinit var mCustomGestureDetectorView: CustomGestureDetectorView
-    private lateinit var mViewPager: ViewPager
+    private lateinit var llcQrCode: LinearLayoutCompat
+    private lateinit var llcBarCode:LinearLayoutCompat
+    private lateinit var viewQrCode:View
+    private lateinit var viewBarCode:View
 
     private var widthPixels = 0
     private var heightPixels = 0
@@ -109,11 +111,13 @@ class ScanningActivity : AppCompatActivity() {
     private fun initView() {
         previewView = findViewById(R.id.previewView)
         closeImageView = findViewById(R.id.iv_close)
-        tipView = findViewById(R.id.tv_tip)
         fileScanTipView = findViewById(R.id.tv_file_scane_tip)
         lineImageView = findViewById(R.id.iv_scan_line)
         mCustomGestureDetectorView = findViewById(R.id.gestureDetectorView)
-        mViewPager = findViewById(R.id.viewPager)
+        llcQrCode = findViewById(R.id.llc_qr_code)
+        llcBarCode = findViewById(R.id.llc_bar_code)
+        viewQrCode = findViewById(R.id.view_qr_code)
+        viewBarCode = findViewById(R.id.view_bar_code)
         ivFlashImageView = findViewById(R.id.iv_flash)
         ivAlbumImageView = findViewById(R.id.iv_album)
     }
@@ -131,6 +135,7 @@ class ScanningActivity : AppCompatActivity() {
         ivAlbumImageView.visibility =
             if (ScanningManager.instance.getConfig().albumOnClickListener == null) View.GONE else View.VISIBLE
         ivAlbumImageView.setOnClickListener { v ->
+            ScanningManager.instance.getConfig().albumOnClickListener?.onClick(true)
             val intent = Intent(Intent.ACTION_PICK, null)
             intent.setDataAndType(
                 MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
@@ -144,30 +149,62 @@ class ScanningActivity : AppCompatActivity() {
         closeImageView.setOnClickListener {
             finish()
         }
-        val types = resources.getStringArray(R.array.scan_type)
-        mViewPager.adapter = ScanTypeAdapter(this, types)
-        mViewPager.offscreenPageLimit = types.size
-        mViewPager.setPageTransformer(true, ScanTypePageTransformer())
-        mViewPager.addOnPageChangeListener(object : ViewPager.OnPageChangeListener {
-            override fun onPageScrolled(
-                position: Int,
-                positionOffset: Float,
-                positionOffsetPixels: Int
-            ) {
-            }
+//        val types = resources.getStringArray(R.array.scan_type)
+//        mViewPager.adapter = ScanTypeAdapter(this, types){
+//            if(it!=mViewPager.currentItem){
+//                mViewPager.currentItem=it
+//                scanType = it
+//            }
+//        }
+//        mViewPager.offscreenPageLimit = types.size
+//        mViewPager.setPageTransformer(true, ScanTypePageTransformer())
+//        mViewPager.addOnPageChangeListener(object : ViewPager.OnPageChangeListener {
+//            override fun onPageScrolled(
+//                position: Int,
+//                positionOffset: Float,
+//                positionOffsetPixels: Int
+//            ) {
+//            }
+//
+//            override fun onPageSelected(position: Int) {
+//                // 类型切换
+//                scanType = position
+//            }
+//
+//            override fun onPageScrollStateChanged(state: Int) {
+//            }
+//        })
+//        mViewPager.currentItem = config.scanType
+//        scanType = config.scanType
+//        findViewById<FrameLayout>(R.id.layoutBottom).setOnTouchListener { view, motionEvent ->
+//            mViewPager.onTouchEvent(motionEvent)
+//        }
 
-            override fun onPageSelected(position: Int) {
-                // 类型切换
-                scanType = position
-            }
-
-            override fun onPageScrollStateChanged(state: Int) {
-            }
-        })
-        mViewPager.currentItem = config.scanType
         scanType = config.scanType
-        findViewById<FrameLayout>(R.id.layoutBottom).setOnTouchListener { view, motionEvent ->
-            mViewPager.onTouchEvent(motionEvent)
+        bottomCircleShow()
+        llcQrCode.setOnClickListener {
+            scanType=0
+            bottomCircleShow()
+        }
+
+        llcBarCode.setOnClickListener {
+            scanType=1
+            bottomCircleShow()
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        ScanningManager.instance.getConfig().albumOnClickListener?.onClick(false)
+    }
+
+    private fun bottomCircleShow(){
+        if(scanType==0){
+            viewQrCode.visibility=View.VISIBLE
+            viewBarCode.visibility=View.INVISIBLE
+        }else{
+            viewQrCode.visibility=View.INVISIBLE
+            viewBarCode.visibility=View.VISIBLE
         }
     }
 
@@ -409,20 +446,17 @@ class ScanningActivity : AppCompatActivity() {
             if (isLowLight == true) {
                 // 弱光环境，提示开启闪光灯
                 mainHandler.post {
-                    tipView.text = getString(R.string.low_light_tip)
                     ivFlashImageView.visibility = View.VISIBLE
                 }
             } else {
                 // 已变成非弱光环境，隐藏提示
                 mainHandler.post {
-                    tipView.text = getString(R.string.qr_bar_code)
                     ivFlashImageView.visibility = View.GONE
                 }
             }
         } else {
             // 闪光灯已打开，关闭提示
             mainHandler.post {
-                tipView.text = getString(R.string.qr_bar_code)
                 ivFlashImageView.visibility = View.VISIBLE
             }
         }

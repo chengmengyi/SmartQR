@@ -97,4 +97,11 @@
                 android:textColor="#031727"/>
         </androidx.appcompat.widget.LinearLayoutCompat>
     </androidx.appcompat.widget.LinearLayoutCompat>
+
+    <include
+        android:layout_width="match_parent"
+        android:layout_height="314dp"
+        android:layout_margin="12dp"
+        layout="@layout/native_ad_result"
+        app:layout_constraintTop_toBottomOf="@id/bg_view"/>
 </androidx.constraintlayout.widget.ConstraintLayout>

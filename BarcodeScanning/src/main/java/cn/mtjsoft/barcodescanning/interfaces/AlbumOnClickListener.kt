@@ -5,7 +5,7 @@ import android.view.View
 import java.io.Serializable
 
 interface AlbumOnClickListener : Serializable {
-    fun onClick(v: View, callBack: CallBackFileUri)
+    fun onClick(choose:Boolean)
 }
 
 interface CallBackFileUri : Serializable {

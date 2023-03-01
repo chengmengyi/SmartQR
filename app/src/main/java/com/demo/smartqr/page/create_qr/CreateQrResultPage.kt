@@ -37,6 +37,10 @@ import android.os.Build
 import android.util.Log
 
 import androidx.annotation.RequiresApi
+import com.demo.smartqr.admob.ShowNativeAd
+import com.demo.smartqr.conf.LocalConf
+import com.demo.smartqr.page.HomePage
+import com.demo.smartqr.util.AdLimitManager
 
 import java.io.FileOutputStream
 import java.text.SimpleDateFormat
@@ -45,6 +49,8 @@ import java.util.*
 
 class CreateQrResultPage:BasePage() {
     private var createSuccess=false
+    private val showNativeAd by lazy { ShowNativeAd(this,LocalConf.CREATE_RESULT) }
+
 
     override fun layoutId(): Int= com.demo.smartqr.R.layout.activity_create_qr_result
 
@@ -60,7 +66,7 @@ class CreateQrResultPage:BasePage() {
         }
         llc_save.setOnClickListener { saveOrShare(true) }
         llc_share.setOnClickListener { saveOrShare(false) }
-        iv_back.setOnClickListener { finish() }
+        iv_back.setOnClickListener { onBackPressed() }
     }
 
     private fun saveOrShare(save:Boolean){
@@ -78,7 +84,7 @@ class CreateQrResultPage:BasePage() {
         }
         if(save){
             if(null!=uri){
-                showToast("Saved successfully")
+                showToast("Save to Album")
             }else{
                 showToast("Save failed")
             }
@@ -201,5 +207,23 @@ class CreateQrResultPage:BasePage() {
             e.printStackTrace()
         }
         return null
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if(AdLimitManager.canRefresh(LocalConf.CREATE_RESULT)){
+            showNativeAd.show()
+        }
+    }
+
+    override fun onBackPressed() {
+        startActivity(Intent(this,HomePage::class.java))
+        finish()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        showNativeAd.endShow()
+        AdLimitManager.setRefreshBool(LocalConf.CREATE_RESULT,true)
     }
 }

@@ -77,4 +77,10 @@
             android:layout_marginTop="6dp"
             android:src="@drawable/create_text"/>
     </androidx.appcompat.widget.LinearLayoutCompat>
+    <include
+        android:layout_width="match_parent"
+        android:layout_height="205dp"
+        layout="@layout/native_ad_home"
+        android:layout_margin="20dp"
+        app:layout_constraintTop_toBottomOf="@id/llc_scan"/>
 </androidx.constraintlayout.widget.ConstraintLayout>

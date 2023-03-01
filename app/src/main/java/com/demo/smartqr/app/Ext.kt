@@ -6,9 +6,14 @@ import android.content.Intent
 import android.util.DisplayMetrics
 import android.widget.Toast
 import android.net.Uri
+import android.util.Log
 import android.view.View
 
 import java.net.URLEncoder
+
+fun String.log(){
+    Log.e("qwer",this)
+}
 
 fun View.show(show:Boolean){
     visibility=if (show) View.VISIBLE else View.GONE

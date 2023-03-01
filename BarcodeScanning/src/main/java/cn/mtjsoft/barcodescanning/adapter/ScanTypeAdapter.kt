@@ -7,7 +7,11 @@ import android.widget.TextView
 import androidx.viewpager.widget.PagerAdapter
 import cn.mtjsoft.barcodescanning.R
 
-class ScanTypeAdapter(private val context: Context, private val datas: Array<String>) :
+class ScanTypeAdapter(
+    private val context: Context,
+    private val datas: Array<String>,
+    private val click:(position:Int)->Unit
+    ) :
     PagerAdapter() {
 
 
@@ -19,6 +23,7 @@ class ScanTypeAdapter(private val context: Context, private val datas: Array<Str
         val textView: TextView = View.inflate(context, R.layout.view_scan_type, null) as TextView
         textView.text = datas[position]
         container.addView(textView)
+        textView.setOnClickListener { click.invoke(position) }
         return textView
     }
 

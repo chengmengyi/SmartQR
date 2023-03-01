@@ -27,16 +27,40 @@ import kotlinx.android.synthetic.main.activity_home.*
 import android.R.attr.data
 import cn.mtjsoft.barcodescanning.ScanningActivity
 import com.blankj.utilcode.util.ActivityUtils
+import com.demo.smartqr.admob.ShowFullAd
+import com.demo.smartqr.admob.ShowNativeAd
+import com.demo.smartqr.app.PageRegister
+import com.demo.smartqr.conf.LocalConf
+import com.demo.smartqr.util.AdLimitManager
 
 
 class HomePage :BasePage() {
+    private val showFullAd by lazy { ShowFullAd(this,LocalConf.CLICK_FUNC) }
+
+    private val showNativeAd by lazy { ShowNativeAd(this,LocalConf.HOME) }
 
     override fun layoutId(): Int = R.layout.activity_home
 
     override fun view() {
         immersionBar.statusBarView(top_view).statusBarDarkFont(true).init()
-        llc_scan.setOnClickListener { toScan() }
-        llc_create.setOnClickListener { startActivity(Intent(this,CreateQrPage::class.java)) }
+        llc_scan.setOnClickListener {
+            showFullAd.show(
+                emptyBack = true,
+                showing = {},
+                close = {
+                    toScan()
+                }
+            )
+        }
+        llc_create.setOnClickListener {
+            showFullAd.show(
+                emptyBack = true,
+                showing = {},
+                close = {
+                    startActivity(Intent(this,CreateQrPage::class.java))
+                }
+            )
+        }
         iv_set.setOnClickListener { startActivity(Intent(this,SetPage::class.java)) }
     }
 
@@ -51,8 +75,8 @@ class HomePage :BasePage() {
                             true,
                             ScanType.QR_CODE,
                             object : AlbumOnClickListener {
-                                override fun onClick(v: View, callBack: CallBackFileUri) {
-
+                                override fun onClick(choose:Boolean) {
+                                    PageRegister.banReload=choose
                                 }
                             },
                             object : ScanResultListener {
@@ -81,5 +105,18 @@ class HomePage :BasePage() {
                     }
                 }
             })
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if(AdLimitManager.canRefresh(LocalConf.HOME)){
+            showNativeAd.show()
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        showNativeAd.endShow()
+        AdLimitManager.setRefreshBool(LocalConf.HOME,true)
     }
 }
